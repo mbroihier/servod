@@ -1,0 +1,13 @@
+#ifndef INCLUDE_MISC_H_
+#define INCLUDE_MISC_H_
+
+#define PERI_BUS_BASE 0x7E000000
+
+#define GPIO_BASE 0x00200000
+#define GPIO_PIN_CLEAR 0x28
+#define GPIO_PIN_SET 0x1c
+
+#define PWM_BASE 0x0020C000
+#define PWM_FIFO 0x18
+
+#endif  // INCLUDE_MISC_H_
