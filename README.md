@@ -17,14 +17,19 @@ $ cd build
 $ cmake ..
 $ make
 ```
+Define a servo or set of servos (one per line):
+```
+$ echo "18, 6" >./servoDefinitionFile.txt
+```
+This line creates a file that defines the first servo (0).  The 18 refers to the GPIO pin (using the BCM definition).  This will be the pin the servo signal will be sent on.  The 6 refers to an unused DMA channel that will be used to control the pulse generation.  Each DMA channel can control up to 10 servos.  Subsequent lines in the file define additional servos that must be on different GPIO pins, but may be on the same DMA channel (up to 10).  Multiple DMA channels may be used.
 
 To run:
 ```
 $ sudo ./servod
 ```
-From another terminal or an application writing to the pipe, write a string of digits(between 1000 and 2000):
+From another terminal, write a string that consists of two integers separated by a comma and space.  The first integer refers to the servo number (zero based).  The second integer should range from 1000 to 2000.  This integer is the the pulse width in microseconds sent to the servo every 20 msec.
 ```
-$ echo "1000" > /dev/servo_fifo
+$ echo "0, 1000" > /dev/servo_fifo
 ```
 
 
