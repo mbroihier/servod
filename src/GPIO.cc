@@ -33,13 +33,24 @@
 
 GPIO::GPIO(Servos::servoListElement * list, Peripheral * peripheralUtil) {
   Servos::servoListElement * aServo = list;
-  uint32_t * gpioModeReg = reinterpret_cast<uint32_t *>(peripheralUtil->mapPeripheralToUserSpace(GPIO_BASE, GPIO_MODE_SIZE));
+  volatile uint32_t * gpioModeReg = reinterpret_cast<uint32_t *>(peripheralUtil->mapPeripheralToUserSpace(GPIO_BASE, GPIO_MODE_SIZE));
   uint32_t pin;
+  uint32_t offset;
+  uint32_t setting;
+  uint32_t shift;
+  uint32_t mask;
+  uint32_t originalSettings;
   if (aServo) {
     while (aServo) {
       pin = aServo->servoPtr->getBit();
       fprintf(stderr, "Setting Servo ID %d GPIO pin %d to be output\n", aServo->servoPtr->getID(), pin);
-      gpioModeReg[pin/10] = 1 << ((pin % 10) * 3);
+      offset = pin/10;
+      shift = (pin % 10) * 3;
+      setting = 1 << shift;
+      mask = 7 << shift;
+      originalSettings = gpioModeReg[offset];
+      fprintf(stderr, "Index: %d, mode: %8.8x, address: %p\n", offset, setting, gpioModeReg);
+      gpioModeReg[offset] = setting | (originalSettings & ~mask);
       aServo = aServo->nextServo;
     }
   } else {
