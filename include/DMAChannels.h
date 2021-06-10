@@ -40,7 +40,7 @@ class DMAChannels {
 
  private:
   std::map<int, DMAChannel *> servoIDToDMAChannel;  // servo id to DMA channel object
-  std::map<int, bool> channelDefined;  // channel to boolean declaring that it is defined
+  std::map<int, int> channelDefined;  // channel to boolean declaring that it is defined
   std::map<DMAChannel *, bool> uniqueDMAChannel;
   std::map<int, Servo *> servoIDToServo;  // servo id to Servo object
   std::map<int, int> servoIDToGPIOBit;  // servo id to GPIO Bit

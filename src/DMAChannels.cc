@@ -76,15 +76,15 @@ DMAChannels::DMAChannels(Servos::servoListElement * list, Peripheral * periphera
       }
       uint32_t channel = aServo->servoPtr->getDMAChannel();
       {
-        std::map<int, bool>::iterator location = channelDefined.find(channel);
+        std::map<int, int>::iterator location = channelDefined.find(channel);
         if (location == channelDefined.end()) {  // this DMA channel needs to be constructed
           fprintf(stderr, "Building DMA channel %d control blocks\n", channel);
           servoIDToDMAChannel[servoID] = new DMAChannel(list, channel, peripheralUtils);
           uniqueDMAChannel[servoIDToDMAChannel[servoID]] = true;
+          channelDefined[channel] = servoID;  // record this so we can use it
         } else {  // alread constructed, simply reference
-          servoIDToDMAChannel[servoID] = servoIDToDMAChannel[location->first];
+          servoIDToDMAChannel[servoID] = servoIDToDMAChannel[location->second];
         }
-        channelDefined[servoID] = true;
       }
       servoID++;
       aServo = aServo->nextServo;
@@ -96,7 +96,7 @@ DMAChannels::DMAChannels(Servos::servoListElement * list, Peripheral * periphera
 }
 DMAChannels::~DMAChannels(void) {
   // delete the DMA channels
-  for (std::map<int, DMAChannel *>::iterator i = servoIDToDMAChannel.begin(); i != servoIDToDMAChannel.end(); i++) {
-    delete (i->second);
+  for (std::map<DMAChannel *, bool>::iterator i = uniqueDMAChannel.begin(); i != uniqueDMAChannel.end(); i++) {
+    delete (i->first);
   }
 }
