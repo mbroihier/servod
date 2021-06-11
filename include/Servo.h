@@ -40,8 +40,6 @@ class Servo {
   const uint32_t MINIMUM_SERVO_ON = 1000;
   const uint32_t MAXIMUM_SERVO_ON = MINIMUM_SERVO_ON + RANGE;
   const uint32_t MAXIMUM_NUMBER_OF_SERVOS = 10;  // per DMA channel
-  const uint32_t SERVO_CONTROL_TICS = PERIOD / MAXIMUM_NUMBER_OF_SERVOS;
-  const uint32_t NUMBER_OF_DMA_CHANNELS = 1;
   const uint32_t TICS_PER_SERVO = MAXIMUM_SERVO_ON;
   uint32_t location;         // location of the servo (this is a time ranging from 1000 usec to 2000 usec
   uint32_t gpioBit;          // gpio bit that PWM signal is sent on

@@ -95,7 +95,7 @@ void DMAChannel::dmaInitCBs() {
     cb->src = ithCBBusAddr(0);  // Dummy data
     cb->dest = PERI_BUS_BASE + PWM_BASE + PWM_FIFO;
     if (servoRef[timeSlice]) {  // if there is a servo, get its location
-      cb->txLen = 4 * servoRef[timeSlice]->getLocation();
+      cb->txLen = 4 * servoRef[timeSlice]->getLocation() / totalNumberOfDMAChannels;
     } else {
       cb->txLen = 4;
     }
@@ -117,9 +117,9 @@ void DMAChannel::dmaInitCBs() {
     cb->src = ithCBBusAddr(0);  // Dummy data
     cb->dest = PERI_BUS_BASE + PWM_BASE + PWM_FIFO;
     if (servoRef[timeSlice]) {  // if there is a servo, get its location
-      cb->txLen = 4 * (TICS_PER_TIME_SLOT - servoRef[timeSlice]->getLocation());
+      cb->txLen = 4 * (TICS_PER_TIME_SLOT - servoRef[timeSlice]->getLocation()) / totalNumberOfDMAChannels;
     } else {
-      cb->txLen = 4 * (TICS_PER_TIME_SLOT - 1);
+      cb->txLen = 4 * (TICS_PER_TIME_SLOT - 1) / totalNumberOfDMAChannels;
     }
     index++;
     fprintf(stderr, "index: %d\n", index);
@@ -159,7 +159,7 @@ void DMAChannel::setNewLocation() {
     cb->src = ithCBBusAddr(0);  // Dummy data
     cb->dest = PERI_BUS_BASE + PWM_BASE + PWM_FIFO;
     if (servoRef[timeSlice]) {  // if there is a servo, get its location
-      cb->txLen = 4 * servoRef[timeSlice]->getLocation();
+      cb->txLen = 4 * servoRef[timeSlice]->getLocation() / totalNumberOfDMAChannels;
     } else {
       cb->txLen = 4;
     }
@@ -179,9 +179,9 @@ void DMAChannel::setNewLocation() {
     cb->src = ithCBBusAddr(0);  // Dummy data
     cb->dest = PERI_BUS_BASE + PWM_BASE + PWM_FIFO;
     if (servoRef[timeSlice]) {  // if there is a servo, get its location
-      cb->txLen = 4 * (TICS_PER_TIME_SLOT - servoRef[timeSlice]->getLocation());
+      cb->txLen = 4 * (TICS_PER_TIME_SLOT - servoRef[timeSlice]->getLocation()) / totalNumberOfDMAChannels;
     } else {
-      cb->txLen = 4 * (TICS_PER_TIME_SLOT - 1);
+      cb->txLen = 4 * (TICS_PER_TIME_SLOT - 1) / totalNumberOfDMAChannels;
     }
     index++;
     if (index == CB_COUNT) {
@@ -245,6 +245,12 @@ void DMAChannel::dmaEnd() {
   free(dmaGPIOPinOff);
 }
 
+void DMAChannel::adjustForAdditionalDMAChannels(uint32_t totalNumberOfDMAChannels) {
+  this->totalNumberOfDMAChannels = totalNumberOfDMAChannels;
+  dmaInitCBs();
+  lastCBStart = ithCBBusAddr(0);
+}
+
 DMAChannel::DMAChannel(Servos::servoListElement * list, uint32_t channel, Peripheral * peripheralUtil) {
   Servos::servoListElement * aServo = list;
   dmaAllocBuffers();
@@ -283,6 +289,7 @@ DMAChannel::DMAChannel(Servos::servoListElement * list, uint32_t channel, Periph
       }
     }
     // add DMA control block definitions for this channel
+    totalNumberOfDMAChannels = 1;  // assuming just one, but may adjust after all channels created
     dmaInitCBs();  
     lastCBStart = ithCBBusAddr(0);
   } else {

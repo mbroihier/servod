@@ -48,8 +48,7 @@ class Servos {
     servoListElement * nextServo;
   } servoListElement;
  private:
-  const uint32_t MAXIMUM_NUMBER_OF_SERVOS = 10;
-  const uint32_t NUMBER_OF_DMA_CHANNELS = 1;
+  const uint32_t MAXIMUM_NUMBER_OF_SERVOS = 20;
   uint32_t numberOfServos;
   servoListElement * servoList;
  public:

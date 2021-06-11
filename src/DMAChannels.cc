@@ -52,6 +52,7 @@ void DMAChannels::setNewLocation(uint32_t servoID, uint32_t location) {
 DMAChannels::DMAChannels(Servos::servoListElement * list, Peripheral * peripheralUtils) {
   Servos::servoListElement * aServo = list;
   uint32_t servoID = 0;
+  uint32_t totalNumberOfDMAChannels = 0;
   if (aServo) {
     while (aServo) {  // walk through list making DMA Channels when necessary
       uint32_t gpioBit = aServo->servoPtr->getBit();
@@ -82,12 +83,18 @@ DMAChannels::DMAChannels(Servos::servoListElement * list, Peripheral * periphera
           servoIDToDMAChannel[servoID] = new DMAChannel(list, channel, peripheralUtils);
           uniqueDMAChannel[servoIDToDMAChannel[servoID]] = true;
           channelDefined[channel] = servoID;  // record this so we can use it
+          totalNumberOfDMAChannels++;
         } else {  // alread constructed, simply reference
           servoIDToDMAChannel[servoID] = servoIDToDMAChannel[location->second];
         }
       }
       servoID++;
       aServo = aServo->nextServo;
+    }
+    if (totalNumberOfDMAChannels > 1) {  // recalibrate timing
+      for (std::map<DMAChannel *, bool>::iterator i = uniqueDMAChannel.begin(); i != uniqueDMAChannel.end(); i++) {
+        i->first->adjustForAdditionalDMAChannels(totalNumberOfDMAChannels);
+      }
     }
   } else {
     fprintf(stderr, "Invalid list of servos.  At least one should be defined.  Terminating...\n");
