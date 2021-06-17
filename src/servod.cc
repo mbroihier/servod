@@ -65,7 +65,11 @@ void respondToRequest(DMAChannels * dmaChannels) {
         if (n != 3 || nl != '\n') {
           fprintf(stderr, "Bad input, enter only decimal digits\n%s\n", line);
         } else if (width < 1000 || width > 2000) {
-          fprintf(stderr, "Pulse width out of range (1000 to 2000)\nInput was: %d\n", width);
+          if (width == 0) {
+            stayInLoop = false;
+          } else {
+            fprintf(stderr, "Pulse width out of range (1000 to 2000)\nInput was: %d\n", width);
+          }
         } else {
           dmaChannels->setNewLocation(id, width);
         }
@@ -75,6 +79,9 @@ void respondToRequest(DMAChannels * dmaChannels) {
     }
   }
   unlink(SERVO_FIFO);
+  dmaChannels->noPulse();
+  fprintf(stderr, "Turn off PWM\n");
+  sleep(2);
 }
 
 Servos::servoDefinition * readServoList() {
@@ -135,9 +142,14 @@ void sigint_handler(int signo) {
   }
 }
 
-int main() {
+int main(int argc, char ** argv) {
   signal(SIGINT, sigint_handler);
 
+  if (argc == 1) { // run as daemon
+    fclose(stdin);
+    fclose(stdout);
+    fclose(stderr);
+  }
   Peripheral peripheralUtil;  //  create an object to reference peripherals
   Servos::servoDefinition * servoDefinitionList = readServoList();
 

@@ -49,6 +49,13 @@ void DMAChannels::setNewLocation(uint32_t servoID, uint32_t location) {
   servoIDToDMAChannel[servoID]->swapDMACBs();
 }
 
+void DMAChannels::noPulse() {
+  //  force on masks to be zero so no GPIO bit is turned on
+  for (std::map<DMAChannel *, bool>::iterator i = uniqueDMAChannel.begin(); i != uniqueDMAChannel.end(); i++) {
+    i->first->noPulse();
+  }
+}
+
 DMAChannels::DMAChannels(Servos::servoListElement * list, Peripheral * peripheralUtils) {
   Servos::servoListElement * aServo = list;
   uint32_t servoID = 0;

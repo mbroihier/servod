@@ -144,6 +144,8 @@ void DMAChannel::setNewLocation() {
     index = CB_COUNT;
     stopIndex = ALL_CB_COUNT;
   }
+  uint32_t totalByteCount = 0;
+  uint32_t countsToBalance = 0;
   while (index < stopIndex) {
     // gpio pin on block
     cb = ithCBVirtAddr(index);
@@ -151,6 +153,7 @@ void DMAChannel::setNewLocation() {
     cb->src = gpioPinOnBusAddr(timeSlice);
     cb->dest = PERI_BUS_BASE + GPIO_BASE + GPIO_PIN_SET + dmaGPIOOnOffIndex[timeSlice];
     cb->txLen = 4;
+    totalByteCount += cb->txLen;
     index++;
     cb->nextCB = ithCBBusAddr(index);
     // First Delay block
@@ -163,6 +166,9 @@ void DMAChannel::setNewLocation() {
     } else {
       cb->txLen = 4;
     }
+    countsToBalance = cb->txLen;
+    fprintf(stderr, "index: %d, counts to balance: %d\n", index, countsToBalance);
+    totalByteCount += cb->txLen;
     index++;
     cb->nextCB = ithCBBusAddr(index);
     // gpio pin off block
@@ -171,6 +177,7 @@ void DMAChannel::setNewLocation() {
     cb->src = gpioPinOffBusAddr(timeSlice);
     cb->dest = PERI_BUS_BASE + GPIO_BASE + GPIO_PIN_CLEAR + dmaGPIOOnOffIndex[timeSlice];
     cb->txLen = 4;
+    totalByteCount += cb->txLen;
     index++;
     cb->nextCB = ithCBBusAddr(index);
     // Second Delay block
@@ -178,11 +185,8 @@ void DMAChannel::setNewLocation() {
     cb->txInfo = DMA_NO_WIDE_BURSTS | DMA_WAIT_RESP | DMA_DEST_DREQ | DMA_PERIPHERAL_MAPPING(5);
     cb->src = ithCBBusAddr(0);  // Dummy data
     cb->dest = PERI_BUS_BASE + PWM_BASE + PWM_FIFO;
-    if (servoRef[timeSlice]) {  // if there is a servo, get its location
-      cb->txLen = 4 * (TICS_PER_TIME_SLOT - servoRef[timeSlice]->getLocation()) / totalNumberOfDMAChannels;
-    } else {
-      cb->txLen = 4 * (TICS_PER_TIME_SLOT - 1) / totalNumberOfDMAChannels;
-    }
+    cb->txLen = 4 * TICS_PER_TIME_SLOT / totalNumberOfDMAChannels - countsToBalance;
+    totalByteCount += cb->txLen;
     index++;
     if (index == CB_COUNT) {
       cb->nextCB = ithCBBusAddr(0);  // wrap to the start of this set of blocks
@@ -193,6 +197,7 @@ void DMAChannel::setNewLocation() {
     }
     timeSlice++;
   }
+  fprintf(stderr, "DMA Channel: %d, total byte count txLen: %d\n", channel, totalByteCount);
 }
 
 void DMAChannel::swapDMACBs() {
@@ -251,11 +256,21 @@ void DMAChannel::adjustForAdditionalDMAChannels(uint32_t totalNumberOfDMAChannel
   lastCBStart = ithCBBusAddr(0);
 }
 
+void DMAChannel::noPulse() {
+  for (uint32_t timeSlice = 0; timeSlice < MAXIMUM_NUMBER_OF_SERVOS_PER_CHANNEL; timeSlice++) {
+    if (servoRef[timeSlice]) {
+      reinterpret_cast<uint32_t *>(dmaGPIOPinOn->virtualAddr)[timeSlice] = 0;  //don't ever turn on
+    }
+  }
+}
+
 DMAChannel::DMAChannel(Servos::servoListElement * list, uint32_t channel, Peripheral * peripheralUtil) {
   Servos::servoListElement * aServo = list;
   dmaAllocBuffers();
   uint8_t * dmaBasePtr = reinterpret_cast<uint8_t *>(peripheralUtil->mapPeripheralToUserSpace(DMA_BASE, PAGE_SIZE));
   dmaReg = reinterpret_cast<DMACtrlReg *>(dmaBasePtr + channel * 0x100);
+  this->channel = channel;
+  fprintf(stderr, "Constructing object for DMA channel %d\n", channel);
   if (aServo) {
     int servoTimeSlice = 0;
     while (servoTimeSlice < MAXIMUM_NUMBER_OF_SERVOS_PER_CHANNEL) {

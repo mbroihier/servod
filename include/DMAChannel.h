@@ -107,6 +107,7 @@ class DMAChannel {
   Servo * servoRef[MAXIMUM_NUMBER_OF_SERVOS_PER_CHANNEL];
   uint32_t dmaGPIOOnOffIndex[MAXIMUM_NUMBER_OF_SERVOS_PER_CHANNEL];
   uint32_t totalNumberOfDMAChannels;
+  uint32_t channel;
 
   DMAMemHandle *dmaMalloc(size_t size);
   void dmaFree(DMAMemHandle *mem);
@@ -125,6 +126,7 @@ class DMAChannel {
   void setNewLocation();
   void swapDMACBs();
   void adjustForAdditionalDMAChannels(uint32_t totalNumberOfDMAChannels);
+  void noPulse();
   DMAChannel(Servos::servoListElement * list, uint32_t channel, Peripheral * peripheralUtil);
   ~DMAChannel(void);
 };
