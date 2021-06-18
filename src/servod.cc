@@ -1,3 +1,4 @@
+
 /*
 This is free and unencumbered software released into the public domain.
 
@@ -146,9 +147,16 @@ int main(int argc, char ** argv) {
   signal(SIGINT, sigint_handler);
 
   if (argc == 1) { // run as daemon
-    fclose(stdin);
-    fclose(stdout);
-    fclose(stderr);
+    pid_t pid = fork();
+    if (pid == 0) {
+      fclose(stdin);
+      fclose(stdout);
+      fclose(stderr);
+      setsid();
+    } else {  // parent or error - exit
+      if (pid < 0) fprintf(stderr, "Fork failed - servod did not start\n");
+      exit(0);
+    }
   }
   Peripheral peripheralUtil;  //  create an object to reference peripherals
   Servos::servoDefinition * servoDefinitionList = readServoList();
