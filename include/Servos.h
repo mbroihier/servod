@@ -56,5 +56,5 @@ class Servos {
   inline servoListElement * getServoList() { return servoList; }
   explicit Servos(servoDefinition * list);
   ~Servos(void);
-}
+};
 #endif  // INCLUDE_SERVOS_H_
