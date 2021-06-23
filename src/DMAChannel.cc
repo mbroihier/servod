@@ -1,34 +1,34 @@
+
 /*
- * Servo class for making a DMA Channel that controls the PWM timing
- *
- * This is free and unencumbered software released into the public domain.
- *
- * Anyone is free to copy, modify, publish, use, compile, sell, or
- * distribute this software, either in source code form or as a compiled
- * binary, for any purpose, commercial or non-commercial, and by any
- * means.
- *
- * In jurisdictions that recognize copyright laws, the author or authors
- * of this software dedicate any and all copyright interest in the
- * software to the public domain. We make this dedication for the benefit
- * of the public at large and to the detriment of our heirs and
- * successors. We intend this dedication to be an overt act of
- * relinquishment in perpetuity of all present and future rights to this
- * software under copyright law.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
- * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
- * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
- * IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
- * OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
- * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
- * OTHER DEALINGS IN THE SOFTWARE.
- *
- * For more information, please refer to <http://unlicense.org/>
- *
- * Mark Broihier
- *
- */
+This is free and unencumbered software released into the public domain.
+
+Anyone is free to copy, modify, publish, use, compile, sell, or
+distribute this software, either in source code form or as a compiled
+binary, for any purpose, commercial or non-commercial, and by any
+means.
+
+In jurisdictions that recognize copyright laws, the author or authors
+of this software dedicate any and all copyright interest in the
+software to the public domain. We make this dedication for the benefit
+of the public at large and to the detriment of our heirs and
+successors. We intend this dedication to be an overt act of
+relinquishment in perpetuity of all present and future rights to this
+software under copyright law.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.
+
+For more information, please refer to <http://unlicense.org/>
+
+Class for making a DMA channel
+
+Mark Broihier 2021
+*/
 #include "../include/DMAChannel.h"
 
 DMAChannel::DMAMemHandle * DMAChannel::dmaMalloc(size_t size) {
@@ -212,6 +212,7 @@ void DMAChannel::swapDMACBs() {
     cb->nextCB = ithCBBusAddr(0);
     lastCBStart = ithCBBusAddr(0);
   }
+  usleep(Servo::PERIOD);
 }
 
 void DMAChannel::dmaStart() {
@@ -259,7 +260,7 @@ void DMAChannel::adjustForAdditionalDMAChannels(uint32_t totalNumberOfDMAChannel
 void DMAChannel::noPulse() {
   for (uint32_t timeSlice = 0; timeSlice < MAXIMUM_NUMBER_OF_SERVOS_PER_CHANNEL; timeSlice++) {
     if (servoRef[timeSlice]) {
-      reinterpret_cast<uint32_t *>(dmaGPIOPinOn->virtualAddr)[timeSlice] = 0;  //don't ever turn on
+      reinterpret_cast<uint32_t *>(dmaGPIOPinOn->virtualAddr)[timeSlice] = 0;  // don't ever turn on
     }
   }
 }
@@ -305,7 +306,7 @@ DMAChannel::DMAChannel(Servos::servoListElement * list, uint32_t channel, Periph
     }
     // add DMA control block definitions for this channel
     totalNumberOfDMAChannels = 1;  // assuming just one, but may adjust after all channels created
-    dmaInitCBs();  
+    dmaInitCBs();
     lastCBStart = ithCBBusAddr(0);
   } else {
     fprintf(stderr, "Invalid list of servos.  At least one should be defined.  Terminating...\n");
