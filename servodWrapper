@@ -1,0 +1,2 @@
+#!/bin/bash
+cd /home/pi/servod/build/; sudo ./servod -d >/dev/null 2>&1

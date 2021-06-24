@@ -1,0 +1,11 @@
+[Unit]
+Description=Servo Daemon
+After=network.target
+
+[Service]
+ExecStart=/home/pi/servod/servodWrapper
+Restart=no
+
+[Install]
+Alias=servod.service
+WantedBy=default.target

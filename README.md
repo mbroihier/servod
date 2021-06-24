@@ -32,6 +32,13 @@ Write a string to /dev/servo_fifo that consists of two integers separated by a c
 $ echo "0, 1000" > /dev/servo_fifo
 ```
 
+To run as a service:
+```
+$ sudo cp -p servod.service /lib/systemd/system/
+$ sudo systemctl enable servod
+$ sudo systemctl start servod
+```
+
 Design information is located [here](https://gist.github.com/mbroihier/f670a765bedfdbfc79fc3504c1ba0460).
 
 ## References
