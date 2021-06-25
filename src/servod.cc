@@ -91,8 +91,9 @@ void respondToRequest(DMAChannels * dmaChannels) {
               }
             } else {
               fprintf(stderr, "Setting width to %d for servo %d\n", width, id);
-              linesPerEvent++;
-              dmaChannels->setNewLocation(id, width);
+              if (dmaChannels->setNewLocation(id, width)) {  // only increment if servo info changed
+                linesPerEvent++;
+              }
             }
             while (buff[offset] != '\n' && offset  < bytesRead) offset++;
             offset++;

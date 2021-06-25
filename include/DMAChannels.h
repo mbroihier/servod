@@ -49,7 +49,7 @@ class DMAChannels {
  public:
   void dmaStart();
   void swapDMACBs();
-  void setNewLocation(uint32_t servoID, uint32_t location);
+  bool setNewLocation(uint32_t servoID, uint32_t location);
   void noPulse();
   DMAChannels(Servos::servoListElement * list, Peripheral * peripheralUtils);
   ~DMAChannels(void);

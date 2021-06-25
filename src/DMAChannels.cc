@@ -37,15 +37,16 @@ void DMAChannels::dmaStart() {
   }
 }
 
-void DMAChannels::setNewLocation(uint32_t servoID, uint32_t location) {
+bool DMAChannels::setNewLocation(uint32_t servoID, uint32_t location) {
   std::map<int, Servo *>::iterator i = servoIDToServo.find(servoID);
   if (i != servoIDToServo.end()) {
     servoIDToServo[servoID]->setNewLocation(location);
   } else {
     fprintf(stderr, "reference to an undefined servo: %d\n", servoID);
-    return;
+    return false;
   }
   servoIDToDMAChannel[servoID]->setNewLocation();
+  return true;
 }
 
 void DMAChannels::swapDMACBs() {
