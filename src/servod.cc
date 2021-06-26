@@ -151,8 +151,9 @@ Servos::servoDefinition * readServoList() {
         fprintf(stderr, "Bad input, enter only a pair of decimal digits separated by a comma and space\n");
         fprintf(stderr, "line length returned was %d\n", lineLen);
         break;
-      } else if (dmaChannel < 1 || dmaChannel > 15) {
-        fprintf(stderr, "DMA Channel out of range (1 to 15)\nInput was: %d\n", dmaChannel);
+      } else if (dmaChannel < DMA_CHANNEL_MINIMUM || dmaChannel > DMA_CHANNEL_MAXIMUM) {  // note dmaChannel unsigned
+        fprintf(stderr, "DMA Channel out of range (%d to %d)\nInput was: %d\n", DMA_CHANNEL_MINIMUM,
+                DMA_CHANNEL_MAXIMUM, dmaChannel);
         exit(-1);
       } else {
         fprintf(stderr, "There will be a servo attached to GPIO pin: %d on DMA Channel %d\n",

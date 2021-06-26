@@ -68,6 +68,10 @@ Mark Broihier 2021
 #define DMA_ACTIVE (1 << 0)
 #define DMA_DISDEBUG (1 << 28)
 
+/* DMA channel min and max */
+#define DMA_CHANNEL_MINIMUM 0
+#define DMA_CHANNEL_MAXIMUM 14
+
 class DMAChannel {
  private:
   static const uint32_t MAXIMUM_NUMBER_OF_SERVOS_PER_CHANNEL = 10;
