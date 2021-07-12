@@ -39,13 +39,23 @@ void PWMHW::initPWM() {
   pwmReg->status = -1;
   usleep(10);
 
-  /*
-   * set number of bits to transmit
-   * e.g, if CLK_MICROS is 5, since we have set the frequency of the
-   * hardware clock to 100 MHZ, then the time taken for `100 * CLK_MICROS` bits
-   * is (500 / 100) = 5 us, this is how we control the DMA sampling rate
-   */
-  pwmReg->range1 = 100 * CLK_MICROS;
+  /* get the PLLD clock frequency we are using */
+
+  uint32_t rangeSetting;
+  FILE * pipe = popen("sudo cat /sys/kernel/debug/clk/clk_summary | grep \"plld_per\" |"
+                      "awk \'{ split($0, a, \" +\"); print a[6]}\'", "r");
+  fscanf(pipe, "%d", &rangeSetting);
+  fprintf(stderr, "Clock reading was: %d\n", rangeSetting);
+  pclose(pipe);
+  if (rangeSetting >= 500000000 && rangeSetting <= 751000000) {
+    rangeSetting /= 5000000;  // adjust so that the setting will be 1 usec per clock
+    fprintf(stderr, "Clock divider will be: %d\n", rangeSetting);
+  } else {
+    fprintf(stderr, "PLLD frequency was not in an expected range.  Terminating...\n");
+    exit(-1);
+  }
+
+  pwmReg->range1 = rangeSetting;
 
   // enable PWM DMA, raise panic and dreq thresholds to 15
   pwmReg->dmaCfg = PWM_DMAC_ENAB | PWM_DMAC_PANIC(15) | PWM_DMAC_DREQ(15);
