@@ -73,6 +73,7 @@ void DMAChannel::dmaInitCBs() {
   DMAControlBlock *cb;
   int index = 0;
   int timeSlice = 0;
+  uint32_t countsToBalance = 0;
   while (index < ALL_CB_COUNT) {
     // gpio pin on block
     fprintf(stderr, "control block index: %d CB_COUNT: %d ALL_CB_COUNT %d\n",
@@ -99,6 +100,7 @@ void DMAChannel::dmaInitCBs() {
     } else {
       cb->txLen = 4;
     }
+    countsToBalance = cb->txLen;
     index++;
     fprintf(stderr, "index: %d\n", index);
     cb->nextCB = ithCBBusAddr(index);
@@ -116,11 +118,7 @@ void DMAChannel::dmaInitCBs() {
     cb->txInfo = DMA_NO_WIDE_BURSTS | DMA_WAIT_RESP | DMA_DEST_DREQ | DMA_PERIPHERAL_MAPPING(5);
     cb->src = ithCBBusAddr(0);  // Dummy data
     cb->dest = PERI_BUS_BASE + PWM_BASE + PWM_FIFO;
-    if (servoRef[timeSlice]) {  // if there is a servo, get its location
-      cb->txLen = 4 * (TICS_PER_TIME_SLOT - servoRef[timeSlice]->getLocation()) / totalNumberOfDMAChannels;
-    } else {
-      cb->txLen = 4 * (TICS_PER_TIME_SLOT - 1) / totalNumberOfDMAChannels;
-    }
+    cb->txLen = 4 * TICS_PER_TIME_SLOT / totalNumberOfDMAChannels - countsToBalance;
     index++;
     fprintf(stderr, "index: %d\n", index);
     if (index == CB_COUNT) {
@@ -303,6 +301,13 @@ DMAChannel::DMAChannel(Servos::servoListElement * list, uint32_t channel, Periph
         servoRef[servoTimeSlice] = NULL;
         servoTimeSlice++;
       }
+    }
+    while (aServo) {  // look at remaining servos
+      if (aServo->servoPtr->getDMAChannel() == channel) {
+        fprintf(stderr, "Too many servos have been allocated to DMA Channel %d.  Terminating...\n", channel);
+        exit(-1);
+      }
+      aServo = aServo->nextServo;
     }
     // add DMA control block definitions for this channel
     totalNumberOfDMAChannels = 1;  // assuming just one, but may adjust after all channels created
